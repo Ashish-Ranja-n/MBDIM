@@ -4,8 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/otp_screen.dart';
-import 'screens/role_selection_screen.dart';
-import 'screens/shop_dashboard.dart';
 import 'screens/investor_dashboard.dart';
 
 void main() {
@@ -29,16 +27,11 @@ class _MbdimAppState extends State<MbdimApp> {
   }
 
   Future<void> _loadInitialScreen() async {
+    // If the user has completed the full startup flow previously, go straight to InvestorDashboard.
     final prefs = await SharedPreferences.getInstance();
-    final role = prefs.getString('user_role');
+    final completed = prefs.getBool('flow_completed') ?? false;
     setState(() {
-      if (role == 'shop') {
-        _home = ShopDashboard(onCall: () {});
-      } else if (role == 'investor') {
-        _home = const InvestorDashboard();
-      } else {
-        _home = null;
-      }
+      _home = completed ? const InvestorDashboard() : null;
     });
   }
 
@@ -67,32 +60,24 @@ class MbdimFlow extends StatefulWidget {
 
 class _MbdimFlowState extends State<MbdimFlow> {
   int _step = 0;
-  String? _role;
+  // role selection removed
 
   void _goToNext([String? value]) {
     setState(() {
       // No need to store user input at this step
-      if (_step == 3 && value != null) _role = value;
       _step++;
     });
+    // If we've just advanced past OTP (step 3 is the dashboard), mark the initial flow as completed
+    // so subsequent app launches can default to the dashboard.
+    if (_step == 3) {
+      // fire-and-forget
+      SharedPreferences.getInstance().then(
+        (prefs) => prefs.setBool('flow_completed', true),
+      );
+    }
   }
 
-  void _goToDashboard(String role) {
-    setState(() {
-      _role = role;
-      _step = 4;
-    });
-  }
-
-  void _callSupport() {
-    // TODO: Implement call support
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Call support feature coming soon!')),
-    );
-  }
-
-  // Removed unused _changeRole method
-
+  // Removed unused support and role-selection helpers.
   @override
   Widget build(BuildContext context) {
     switch (_step) {
@@ -103,13 +88,10 @@ class _MbdimFlowState extends State<MbdimFlow> {
       case 2:
         return OtpScreen(onVerified: _goToNext);
       case 3:
-        return RoleSelectionScreen(onRoleSelected: _goToDashboard);
+        // After OTP, go directly to investor dashboard
+        return const InvestorDashboard();
       case 4:
-        if (_role == 'shop') {
-          return ShopDashboard(onCall: _callSupport);
-        } else {
-          return const InvestorDashboard();
-        }
+        return const InvestorDashboard();
       default:
         return OnboardingScreen(onGetStarted: _goToNext);
     }
