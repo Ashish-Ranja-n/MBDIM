@@ -16,7 +16,6 @@ class InvestorDashboard extends StatefulWidget {
 }
 
 class _InvestorDashboardState extends State<InvestorDashboard> {
-  final TextEditingController _searchController = TextEditingController();
   final String _selectedFilter = 'All';
   bool _loading = true;
   List<Shop> _shops = [];
@@ -82,12 +81,8 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
 
   void _applyFilters() {
     setState(() {
+      // No search input UI — keep filter-only behaviour based on _selectedFilter
       _filteredShops = _shops.where((shop) {
-        final query = _searchController.text.toLowerCase();
-        final matchesSearch =
-            shop.name.toLowerCase().contains(query) ||
-            shop.city.toLowerCase().contains(query) ||
-            shop.category.toLowerCase().contains(query);
         bool matchesFilter = _selectedFilter == 'All';
         if (_selectedFilter == 'Nearby') matchesFilter = shop.city == 'Delhi';
         if (_selectedFilter == 'High ROI') {
@@ -99,7 +94,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
         if (_selectedFilter == 'New') {
           matchesFilter = shop.raised / shop.target < 0.3;
         }
-        return matchesSearch && matchesFilter;
+        return matchesFilter;
       }).toList();
     });
   }
@@ -140,58 +135,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                 pinned: true,
                 delegate: _StickyMarketHeader(),
               ),
-              // Search bar
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF12171C),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (v) => _applyFilters(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFFE6EEF3),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Search shops',
-                              hintStyle: const TextStyle(
-                                color: Color(0xFF9AA5AD),
-                              ),
-                              border: InputBorder.none,
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                color: Color(0xFF9AA5AD),
-                              ),
-                              suffixIcon: IconButton(
-                                icon: const Icon(
-                                  Icons.filter_alt_outlined,
-                                  color: Color(0xFF9AA5AD),
-                                ),
-                                onPressed: () {},
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 10,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // (search bar removed per design) — keeping header, KPI and content
               // KPI / Summary strip
               SliverToBoxAdapter(
                 child: Padding(
@@ -201,7 +145,11 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                   ),
                   child: MarketSummaryCard(
                     activeListings: _shops.length,
-                    todayVolume: currency.format(120000),
+                    todayVolume: currency.format(750),
+                    // compute total raised across shops for the new KPI
+                    totalFundRaised: currency.format(
+                      _shops.fold<double>(0.0, (p, e) => p + e.raised),
+                    ),
                     avgYield: '1.3x',
                   ),
                 ),
@@ -363,7 +311,9 @@ class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        // give the sticky header a solid background so the top area
+        // isn't transparent over the system status bar
+        color: const Color(0xFF0B1115),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha((0.18 * 255).round()),

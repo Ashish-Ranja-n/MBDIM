@@ -4,11 +4,13 @@ import '../design_tokens.dart';
 class MarketSummaryCard extends StatelessWidget {
   final int activeListings;
   final String todayVolume;
+  final String totalFundRaised;
   final String avgYield;
   const MarketSummaryCard({
     super.key,
     required this.activeListings,
     required this.todayVolume,
+    required this.totalFundRaised,
     required this.avgYield,
   });
 
@@ -29,26 +31,42 @@ class MarketSummaryCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildKPI(
-              'Market Index',
-              avgYield,
-              AppColors.kpiHighlight,
-              Icons.trending_up,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildKPI(
+                  'Market Index',
+                  avgYield,
+                  AppColors.warning,
+                  Icons.trending_up,
+                ),
+                _buildKPI(
+                  'Active Listings',
+                  activeListings.toString(),
+                  AppColors.warning,
+                  Icons.store,
+                ),
+                _buildKPI(
+                  'Total Fund Raised',
+                  totalFundRaised,
+                  AppColors.warning,
+                  Icons.savings,
+                ),
+              ],
             ),
-            _buildKPI(
-              'Active Listings',
-              activeListings.toString(),
-              AppColors.accentGreen,
-              Icons.store,
-            ),
-            _buildKPI(
-              'Today Vol',
-              todayVolume,
-              AppColors.kpiHighlight,
-              Icons.currency_rupee,
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _buildKPI(
+                  'Today RSA',
+                  todayVolume,
+                  AppColors.warning,
+                  Icons.home_repair_service_rounded,
+                ),
+              ],
             ),
           ],
         ),
@@ -68,8 +86,9 @@ class MarketSummaryCard extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               value,
+              // emphasise KPI numbers using the highlight colour (matches designer reference)
               style: AppTypography.sectionHeading.copyWith(
-                color: color,
+                color: AppColors.warning,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
