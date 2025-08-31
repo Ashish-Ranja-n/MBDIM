@@ -5,6 +5,7 @@ import 'screens/onboarding_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/otp_screen.dart';
 import 'screens/investor_dashboard.dart';
+import 'screens/profile_info_screen.dart';
 
 void main() {
   runApp(const MbdimApp());
@@ -64,17 +65,11 @@ class _MbdimFlowState extends State<MbdimFlow> {
 
   void _goToNext([String? value]) {
     setState(() {
-      // No need to store user input at this step
+      // advance the step counter
       _step++;
     });
-    // If we've just advanced past OTP (step 3 is the dashboard), mark the initial flow as completed
-    // so subsequent app launches can default to the dashboard.
-    if (_step == 3) {
-      // fire-and-forget
-      SharedPreferences.getInstance().then(
-        (prefs) => prefs.setBool('flow_completed', true),
-      );
-    }
+    // The full flow completion is marked by the ExperienceScreen when the user finishes.
+    // No prefs write here to avoid duplicating the responsibility.
   }
 
   // Removed unused support and role-selection helpers.
@@ -86,10 +81,15 @@ class _MbdimFlowState extends State<MbdimFlow> {
       case 1:
         return WelcomeScreen(onContinue: _goToNext);
       case 2:
+        // OTP step
         return OtpScreen(onVerified: _goToNext);
       case 3:
-        // After OTP, go directly to investor dashboard
-        return const InvestorDashboard();
+        // After OTP, collect profile information; profile will mark flow_completed and we go to dashboard
+        return ProfileInfoScreen(
+          onNext: () {
+            setState(() => _step = 4);
+          },
+        );
       case 4:
         return const InvestorDashboard();
       default:
