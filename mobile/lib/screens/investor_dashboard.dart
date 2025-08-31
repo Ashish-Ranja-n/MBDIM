@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../widgets/market_summary_card.dart';
-import '../widgets/search_filters.dart';
 import '../widgets/shop_card.dart';
 import '../widgets/invest_modal.dart';
 import '../widgets/shop_detail.dart';
@@ -17,7 +16,7 @@ class InvestorDashboard extends StatefulWidget {
 
 class _InvestorDashboardState extends State<InvestorDashboard> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedFilter = 'All';
+  final String _selectedFilter = 'All';
   bool _loading = true;
   List<Shop> _shops = [];
   List<Shop> _filteredShops = [];
@@ -25,12 +24,20 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
   @override
   void initState() {
     super.initState();
+    // ensure system status bar icons are visible on dark background
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+    );
     _loadMockData();
   }
 
   Future<void> _loadMockData() async {
     setState(() => _loading = true);
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 800));
     _shops = [
       Shop(
         name: 'FreshMart',
@@ -82,12 +89,15 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
             shop.category.toLowerCase().contains(query);
         bool matchesFilter = _selectedFilter == 'All';
         if (_selectedFilter == 'Nearby') matchesFilter = shop.city == 'Delhi';
-        if (_selectedFilter == 'High ROI')
+        if (_selectedFilter == 'High ROI') {
           matchesFilter = shop.estReturn >= 1.3;
-        if (_selectedFilter == 'Most Funded')
+        }
+        if (_selectedFilter == 'Most Funded') {
           matchesFilter = shop.raised / shop.target > 0.7;
-        if (_selectedFilter == 'New')
+        }
+        if (_selectedFilter == 'New') {
           matchesFilter = shop.raised / shop.target < 0.3;
+        }
         return matchesSearch && matchesFilter;
       }).toList();
     });
@@ -116,143 +126,440 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'Investment Market',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: Colors.green[900],
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.green),
-            onPressed: () {},
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.green[100],
-              child: const Icon(Icons.person, color: Colors.green, size: 22),
-            ),
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF43E97B), Color(0xFF38F9D7)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: RefreshIndicator(
-            onRefresh: _loadMockData,
-            child: CustomScrollView(
-              slivers: [
+      backgroundColor: const Color(0xFF0B1115),
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: const Color(0xFF0F9D58),
+          backgroundColor: const Color(0xFF12171C),
+          onRefresh: _loadMockData,
+          child: CustomScrollView(
+            slivers: [
+              // Sticky header
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _StickyMarketHeader(),
+              ),
+              // Search bar
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF12171C),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (v) => _applyFilters(),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFFE6EEF3),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Search shops',
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF9AA5AD),
+                              ),
+                              border: InputBorder.none,
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Color(0xFF9AA5AD),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(
+                                  Icons.filter_alt_outlined,
+                                  color: Color(0xFF9AA5AD),
+                                ),
+                                onPressed: () {},
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // KPI / Summary strip
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 2,
+                  ),
+                  child: MarketSummaryCard(
+                    activeListings: _shops.length,
+                    todayVolume: currency.format(120000),
+                    avgYield: '1.3x',
+                  ),
+                ),
+              ),
+              // Add spacing between KPI and chart
+              SliverToBoxAdapter(child: SizedBox(height: 8)),
+              // Chart card (mock sparkline)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 2,
+                  ),
+                  child: _MarketChartCard(),
+                ),
+              ),
+              // Featured shop card (first shop)
+              if (_shops.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                      horizontal: 0,
+                      vertical: 2,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SearchFilters(
-                          controller: _searchController,
-                          filters: const [
-                            'All',
-                            'Nearby',
-                            'High ROI',
-                            'Most Funded',
-                            'New',
-                          ],
-                          selectedFilter: _selectedFilter,
-                          onFilterSelected: (f) {
-                            setState(() => _selectedFilter = f);
-                            _applyFilters();
-                          },
-                          onSearchChanged: (v) => _applyFilters(),
-                        ),
-                        MarketSummaryCard(
-                          activeListings: _shops.length,
-                          todayVolume: currency.format(120000),
-                          avgYield: '1.3x',
-                        ),
-                      ],
+                    child: ShopCard(
+                      shop: _shops.first,
+                      onInvest: () => _onInvest(_shops.first),
+                      onDetails: () => _onDetails(_shops.first),
                     ),
                   ),
                 ),
-                _loading
-                    ? SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) => const Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            child: ShimmerPlaceholder(height: 120),
+              // Shop list
+              _loading
+                  ? SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) => Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 0,
+                            vertical: 6,
                           ),
-                          childCount: 3,
+                          child: ShimmerPlaceholder(height: 120),
                         ),
-                      )
-                    : _filteredShops.isEmpty
-                    ? SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Center(
-                            child: Text(
-                              'No shops found.',
-                              style: GoogleFonts.poppins(fontSize: 16),
+                        childCount: 3,
+                      ),
+                    )
+                  : _filteredShops.isEmpty
+                  ? SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(
+                          child: Text(
+                            'No shops found.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF9AA5AD),
                             ),
                           ),
                         ),
-                      )
-                    : SliverList(
-                        delegate: SliverChildBuilderDelegate((context, i) {
-                          final shop = _filteredShops[i];
-                          return AnimatedOpacity(
-                            opacity: 1,
-                            duration: Duration(milliseconds: 300 + i * 100),
+                      ),
+                    )
+                  : () {
+                      // If we show a featured shop (the first shop), avoid duplicating it in the list.
+                      final displayedShops =
+                          (_shops.isNotEmpty &&
+                              _filteredShops.contains(_shops.first))
+                          ? _filteredShops
+                                .where((s) => s != _shops.first)
+                                .toList()
+                          : _filteredShops;
+
+                      return SliverList.separated(
+                        itemCount: displayedShops.length,
+                        separatorBuilder: (context, i) =>
+                            const SizedBox(height: 4),
+                        itemBuilder: (context, i) {
+                          final shop = displayedShops[i];
+                          // staggered slide + fade for better entrance
+                          return _StaggeredItem(
+                            index: i,
                             child: ShopCard(
                               shop: shop,
                               onInvest: () => _onInvest(shop),
                               onDetails: () => _onDetails(shop),
                             ),
                           );
-                        }, childCount: _filteredShops.length),
-                      ),
-              ],
-            ),
+                        },
+                      );
+                    }(),
+            ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.green[800],
-        unselectedItemColor: Colors.green[300],
-        onTap: (i) {},
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Market'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.trending_up),
-            label: 'Portfolio',
+    );
+  }
+}
+
+// simple staggered slide+fade wrapper
+class _StaggeredItem extends StatefulWidget {
+  final Widget child;
+  final int index;
+  const _StaggeredItem({required this.child, required this.index});
+
+  @override
+  State<_StaggeredItem> createState() => _StaggeredItemState();
+}
+
+class _StaggeredItemState extends State<_StaggeredItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<Offset> _offset;
+  late final Animation<double> _opacity;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 450),
+    );
+    final curve = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+    _offset = Tween(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(curve);
+    _opacity = Tween(begin: 0.0, end: 1.0).animate(curve);
+    Future.delayed(
+      Duration(milliseconds: 80 * widget.index),
+      () => _ctrl.forward(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SlideTransition(
+      position: _offset,
+      child: FadeTransition(opacity: _opacity, child: widget.child),
+    );
+  }
+}
+
+// Sticky header delegate for Market page
+class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
+  @override
+  double get minExtent => 60;
+  @override
+  double get maxExtent => 68;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((0.18 * 255).round()),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        elevation: 8,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () {},
+              child: CircleAvatar(
+                radius: 20,
+                backgroundColor: const Color(0xFF12171C),
+                child: const Icon(
+                  Icons.person,
+                  color: Color(0xFF0F9D58),
+                  size: 22,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Investment Market',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 26,
+                    color: Color(0xFFE6EEF3),
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.notifications_none,
+                color: Color(0xFF0F9D58),
+              ),
+              onPressed: () {},
+              splashRadius: 24,
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
+}
+
+// Mock chart card widget for dashboard
+class _MarketChartCard extends StatefulWidget {
+  @override
+  State<_MarketChartCard> createState() => _MarketChartCardState();
+}
+
+class _MarketChartCardState extends State<_MarketChartCard> {
+  bool showTotalReturn = true;
+  final List<double> mockData = [
+    1.0,
+    1.1,
+    1.15,
+    1.2,
+    1.18,
+    1.25,
+    1.3,
+    1.28,
+    1.32,
+    1.35,
+    1.33,
+    1.38,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF12171C),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((0.18 * 255).round()),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: () => setState(() => showTotalReturn = true),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: showTotalReturn
+                        ? const Color(0xFF0F9D58)
+                        : const Color(0xFF232A31),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'Total Return',
+                    style: TextStyle(
+                      color: showTotalReturn ? Colors.white : Color(0xFFB7C2C8),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () => setState(() => showTotalReturn = false),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: !showTotalReturn
+                        ? const Color(0xFF0F9D58)
+                        : const Color(0xFF232A31),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    'NAV Per Unit',
+                    style: TextStyle(
+                      color: !showTotalReturn
+                          ? Colors.white
+                          : Color(0xFFB7C2C8),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 80,
+            child: CustomPaint(
+              painter: _SparklinePainter(
+                mockData,
+                accent: const Color(0xFF66FFA6),
+              ),
+              child: Container(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SparklinePainter extends CustomPainter {
+  final List<double> data;
+  final Color accent;
+  _SparklinePainter(this.data, {required this.accent});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = accent
+      ..strokeWidth = 2.5
+      ..style = PaintingStyle.stroke;
+    final path = Path();
+    if (data.isNotEmpty) {
+      final min = data.reduce((a, b) => a < b ? a : b);
+      final max = data.reduce((a, b) => a > b ? a : b);
+      for (int i = 0; i < data.length; i++) {
+        final x = i * size.width / (data.length - 1);
+        final y =
+            size.height -
+            ((data[i] - min) / (max - min + 0.0001)) * size.height;
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+      canvas.drawPath(path, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -17,7 +17,7 @@ class ShimmerPlaceholder extends StatelessWidget {
       height: height,
       width: width,
       decoration: BoxDecoration(
-        color: Colors.grey[300],
+        color: const Color(0xFF232A31), // dark shimmer base
         borderRadius: borderRadius,
       ),
     );

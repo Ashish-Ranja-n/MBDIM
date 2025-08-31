@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class InvestModal extends StatefulWidget {
@@ -25,10 +24,10 @@ class _InvestModalState extends State<InvestModal> {
     return Padding(
       padding: MediaQuery.of(context).viewInsets,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          color: Color(0xFF12171C),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -36,19 +35,27 @@ class _InvestModalState extends State<InvestModal> {
           children: [
             Text(
               'Invest in Shop',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
+                fontFamily: 'Inter',
                 fontSize: 20,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFFE6EEF3),
               ),
             ),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Ticket Price', style: GoogleFonts.poppins(fontSize: 16)),
+                Text(
+                  'Ticket Price',
+                  style: TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
+                ),
                 Text(
                   currency.format(widget.ticketPrice),
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF66FFA6),
+                  ),
                 ),
               ],
             ),
@@ -56,24 +63,34 @@ class _InvestModalState extends State<InvestModal> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Quantity', style: GoogleFonts.poppins(fontSize: 16)),
+                Text(
+                  'Quantity',
+                  style: TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
+                ),
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        color: Color(0xFF9AA5AD),
+                      ),
                       onPressed: _quantity > 1
                           ? () => setState(() => _quantity--)
                           : null,
                     ),
                     Text(
                       '$_quantity',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Color(0xFFE6EEF3),
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.add_circle_outline),
+                      icon: const Icon(
+                        Icons.add_circle_outline,
+                        color: Color(0xFF9AA5AD),
+                      ),
                       onPressed: () => setState(() => _quantity++),
                     ),
                   ],
@@ -84,34 +101,45 @@ class _InvestModalState extends State<InvestModal> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Total', style: GoogleFonts.poppins(fontSize: 16)),
+                Text(
+                  'Total',
+                  style: TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
+                ),
                 Text(
                   currency.format(total),
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF66FFA6),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F9D58),
-                minimumSize: const Size.fromHeight(48),
+                backgroundColor: Color(0xFF0F9D58),
+                minimumSize: const Size.fromHeight(44),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
               onPressed: () {
                 widget.onConfirm(_quantity);
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Investment successful!')),
+                  const SnackBar(
+                    content: Text('Investment successful!'),
+                    backgroundColor: Color(0xFF12171C),
+                    behavior: SnackBarBehavior.floating,
+                  ),
                 );
               },
               child: Text(
                 'Confirm',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
               ),
             ),

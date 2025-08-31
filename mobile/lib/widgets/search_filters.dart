@@ -9,13 +9,13 @@ class SearchFilters extends StatelessWidget {
   final void Function(String) onSearchChanged;
 
   const SearchFilters({
-    Key? key,
+    super.key,
     required this.controller,
     required this.filters,
     required this.selectedFilter,
     required this.onFilterSelected,
     required this.onSearchChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,30 +26,30 @@ class SearchFilters extends StatelessWidget {
           controller: controller,
           onChanged: onSearchChanged,
           decoration: InputDecoration(
-            prefixIcon: const Icon(Icons.search, color: AppColors.mutedText),
+            prefixIcon: const Icon(Icons.search, color: Color(0xFF9AA5AD)),
             hintText: 'Search shops, city, category',
-            hintStyle: AppTypography.body.copyWith(color: AppColors.mutedText),
+            hintStyle: AppTypography.body.copyWith(color: Color(0xFF9AA5AD)),
             filled: true,
-            fillColor: AppColors.cardBackground,
+            fillColor: const Color(0xFF12171C),
             contentPadding: const EdgeInsets.symmetric(
               vertical: 0,
-              horizontal: 20,
+              horizontal: 16,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(32),
+              borderRadius: BorderRadius.circular(22),
               borderSide: BorderSide.none,
             ),
           ),
-          style: AppTypography.body,
+          style: AppTypography.body.copyWith(color: Color(0xFFE6EEF3)),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: filters.map((filter) {
               final bool selected = filter == selectedFilter;
               return Padding(
-                padding: const EdgeInsets.only(right: 6.0),
+                padding: const EdgeInsets.only(right: 4.0),
                 child: ChoiceChip(
                   label: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -57,6 +57,9 @@ class SearchFilters extends StatelessWidget {
                       Text(
                         filter,
                         style: AppTypography.body.copyWith(
+                          color: selected
+                              ? Color(0xFFE6EEF3)
+                              : Color(0xFFB7C2C8),
                           fontWeight: selected
                               ? FontWeight.bold
                               : FontWeight.normal,
@@ -67,16 +70,16 @@ class SearchFilters extends StatelessWidget {
                           padding: EdgeInsets.only(left: 4.0),
                           child: Icon(
                             Icons.check,
-                            color: AppColors.marketPrimary,
-                            size: 18,
+                            color: Color(0xFF0F9D58),
+                            size: 16,
                           ),
                         ),
                     ],
                   ),
                   selected: selected,
                   onSelected: (_) => onFilterSelected(filter),
-                  selectedColor: const Color(0xFFE6F9EA),
-                  backgroundColor: AppColors.neutralLight,
+                  selectedColor: const Color(0xFF0F9D58),
+                  backgroundColor: const Color(0xFF232A31),
                   labelStyle: AppTypography.body,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadii.button),
@@ -84,7 +87,7 @@ class SearchFilters extends StatelessWidget {
                   side: BorderSide.none,
                   visualDensity: VisualDensity.compact,
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
+                    horizontal: 10,
                     vertical: 0,
                   ),
                 ),

@@ -6,45 +6,81 @@ class MarketSummaryCard extends StatelessWidget {
   final String todayVolume;
   final String avgYield;
   const MarketSummaryCard({
-    Key? key,
+    super.key,
     required this.activeListings,
     required this.todayVolume,
     required this.avgYield,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadii.card),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      elevation: AppElevation.blur,
-      shadowColor: AppElevation.color,
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      color: AppColors.cardBackground,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildColumn('Active', activeListings.toString(), Icons.store),
-            _buildColumn('Today Vol', todayVolume, Icons.currency_rupee),
-            _buildColumn('Avg Yield', avgYield, Icons.trending_up),
+            _buildKPI(
+              'Market Index',
+              avgYield,
+              AppColors.kpiHighlight,
+              Icons.trending_up,
+            ),
+            _buildKPI(
+              'Active Listings',
+              activeListings.toString(),
+              AppColors.accentGreen,
+              Icons.store,
+            ),
+            _buildKPI(
+              'Today Vol',
+              todayVolume,
+              AppColors.kpiHighlight,
+              Icons.currency_rupee,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildColumn(String label, String value, IconData icon) {
+  Widget _buildKPI(String label, String value, Color color, IconData icon) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: AppColors.marketPrimary, size: 20),
-        const SizedBox(height: 4),
-        Text(value, style: AppTypography.cardTitle),
-        const SizedBox(height: 2),
-        Text(label, style: AppTypography.small),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 6),
+            Text(
+              value,
+              style: AppTypography.sectionHeading.copyWith(
+                color: color,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }

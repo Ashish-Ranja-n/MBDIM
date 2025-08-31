@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../design_tokens.dart';
 
@@ -28,7 +27,7 @@ class FundRequestCard extends StatelessWidget {
     Color statusColor;
     switch (request.status) {
       case 'Active':
-        statusColor = AppColors.raiseFundTealStart;
+        statusColor = AppColors.accentGreen;
         break;
       case 'Completed':
         statusColor = AppColors.success;
@@ -36,11 +35,19 @@ class FundRequestCard extends StatelessWidget {
       default:
         statusColor = AppColors.warning;
     }
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      color: AppColors.cardBackground,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+      decoration: BoxDecoration(
+        color: AppColors.cardElevated,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -50,41 +57,38 @@ class FundRequestCard extends StatelessWidget {
               children: [
                 _statusBadge(request.status, statusColor),
                 const SizedBox(width: 12),
-                Text(
-                  request.title,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Text(
-                  'Raised: ${currency.format(request.raised)}',
-                  style: GoogleFonts.poppins(fontSize: 14),
-                ),
-                const SizedBox(width: 16),
-                Text(
-                  'Target: ${currency.format(request.target)}',
-                  style: GoogleFonts.poppins(fontSize: 14),
-                ),
+                Text(request.title, style: AppTypography.cardTitle),
               ],
             ),
             const SizedBox(height: 10),
             Row(
               children: [
+                Text(
+                  'Raised: ${currency.format(request.raised)}',
+                  style: AppTypography.body,
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  'Target: ${currency.format(request.target)}',
+                  style: AppTypography.body,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
                 Expanded(
-                  child: LinearProgressIndicator(
-                    value: percent,
-                    minHeight: 8,
-                    backgroundColor: AppColors.neutralLight,
-                    valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadii.small),
+                    child: LinearProgressIndicator(
+                      value: percent,
+                      minHeight: 8,
+                      backgroundColor: AppColors.surface,
+                      valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 _percentBadge(percentLabel, statusColor),
               ],
             ),
@@ -100,13 +104,13 @@ Widget _statusBadge(String label, Color color) {
     duration: const Duration(milliseconds: 250),
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.1),
+      color: color.withAlpha((0.13 * 255).round()),
       borderRadius: BorderRadius.circular(AppRadii.small),
       boxShadow: [
         BoxShadow(
           color: AppColors.shadow,
-          blurRadius: 8,
-          offset: const Offset(0, 2),
+          blurRadius: 4,
+          offset: const Offset(0, 1),
         ),
       ],
     ),
@@ -116,18 +120,21 @@ Widget _statusBadge(String label, Color color) {
 
 Widget _percentBadge(String label, Color color) {
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
       color: color,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(14),
       boxShadow: [
         BoxShadow(
           color: AppColors.shadow,
-          blurRadius: 8,
-          offset: const Offset(0, 2),
+          blurRadius: 4,
+          offset: const Offset(0, 1),
         ),
       ],
     ),
-    child: Text(label, style: AppTypography.badge),
+    child: Text(
+      label,
+      style: AppTypography.badge.copyWith(color: AppColors.primaryText),
+    ),
   );
 }

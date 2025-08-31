@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'shop_card.dart';
 
 class ShopDetailPage extends StatelessWidget {
@@ -9,16 +8,22 @@ class ShopDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF0B1115),
       appBar: AppBar(
         title: Text(
           shop.name,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFE6EEF3),
+          ),
         ),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0F1720),
+        foregroundColor: const Color(0xFFE6EEF3),
+        elevation: 0.5,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -27,62 +32,67 @@ class ShopDetailPage extends StatelessWidget {
                 CircleAvatar(
                   radius: 32,
                   backgroundImage: AssetImage(shop.logoAsset),
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: const Color(0xFF12171C),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 18),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       shop.name,
-                      style: GoogleFonts.poppins(
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: Color(0xFFE6EEF3),
                       ),
                     ),
                     Text(
                       '${shop.category} · ${shop.city}',
-                      style: GoogleFonts.poppins(
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
                         fontSize: 15,
-                        color: Colors.grey[600],
+                        color: Color(0xFF9AA5AD),
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             Text(
               'Avg UPI/day: ₹${shop.avgUpi}',
-              style: GoogleFonts.poppins(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
             ),
             Text(
               'Ticket: ₹${shop.ticket}',
-              style: GoogleFonts.poppins(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
             ),
             Text(
               'Est Return: ${shop.estReturn}x',
-              style: GoogleFonts.poppins(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
             ),
             Text(
               'Raised: ₹${shop.raised}',
-              style: GoogleFonts.poppins(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
             ),
             Text(
               'Target: ₹${shop.target}',
-              style: GoogleFonts.poppins(fontSize: 16),
+              style: const TextStyle(fontSize: 16, color: Color(0xFFB7C2C8)),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             LinearProgressIndicator(
               value: (shop.raised / shop.target).clamp(0, 1).toDouble(),
               minHeight: 8,
-              backgroundColor: Colors.grey[200],
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+              backgroundColor: const Color(0xFF232A31),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF1DB954),
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 22),
             Text(
               'More details coming soon...',
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF9AA5AD)),
             ),
           ],
         ),
