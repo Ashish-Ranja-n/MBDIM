@@ -47,12 +47,16 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
   Widget build(BuildContext context) {
     final ages = List.generate(63, (i) => i + 18); // 18..80
     return Scaffold(
+      backgroundColor: const Color(0xFF071014),
       appBar: AppBar(
-        title: Text('Complete profile', style: GoogleFonts.poppins()),
-        backgroundColor: Colors.white,
+        title: Text(
+          'Complete profile',
+          style: GoogleFonts.poppins(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF071014),
         elevation: 0,
         centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -73,7 +77,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                         children: [
                           const CircleAvatar(
                             radius: 46,
-                            backgroundColor: Color(0xFF12171C),
+                            backgroundColor: Color(0xFF0F1A1C),
                             child: Icon(
                               Icons.person,
                               size: 44,
@@ -113,7 +117,7 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Profile photo (optional)',
-                        style: GoogleFonts.poppins(color: Colors.black54),
+                        style: GoogleFonts.poppins(color: Colors.white70),
                       ),
                     ],
                   ),
@@ -126,16 +130,24 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                     children: [
                       Text(
                         'Name',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: _nameCtrl,
                         textInputAction: TextInputAction.next,
+                        style: GoogleFonts.poppins(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Your full name',
+                          hintStyle: TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: const Color(0xFF0F1A1C),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade800),
                           ),
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty)
@@ -145,27 +157,36 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Location',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
-                          vertical: 6,
+                          vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: const Color(0xFF0F1A1C),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(color: Colors.grey.shade800),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.location_on, color: Colors.teal),
+                            const Icon(
+                              Icons.location_on,
+                              color: Colors.tealAccent,
+                            ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'Bengaluru, India',
-                                style: GoogleFonts.poppins(fontSize: 14),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
                               ),
                             ),
                             TextButton(
@@ -180,7 +201,9 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                               },
                               child: Text(
                                 'Detect',
-                                style: GoogleFonts.poppins(color: Colors.teal),
+                                style: GoogleFonts.poppins(
+                                  color: Colors.teal.shade200,
+                                ),
                               ),
                             ),
                           ],
@@ -189,7 +212,10 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Age',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
@@ -205,8 +231,9 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                                 setState(() => _age = ages[i]),
                             childDelegate: ListWheelChildBuilderDelegate(
                               builder: (context, index) {
-                                if (index < 0 || index >= ages.length)
+                                if (index < 0 || index >= ages.length) {
                                   return null;
+                                }
                                 final val = ages[index];
                                 return RotatedBox(
                                   quarterTurns: 1,
@@ -248,8 +275,8 @@ class _ProfileInfoScreenState extends State<ProfileInfoScreen> {
                         child: ElevatedButton(
                           onPressed: _saveAndNext,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
-                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.teal.shade300,
+                            foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
