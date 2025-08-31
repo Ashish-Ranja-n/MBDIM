@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'investor_profile_page.dart';
 import '../widgets/market_summary_card.dart';
 import '../widgets/shop_card.dart';
 import '../widgets/invest_modal.dart';
@@ -376,7 +377,14 @@ class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
         child: Row(
           children: [
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const InvestorProfilePage(),
+                  ),
+                );
+              },
               child: CircleAvatar(
                 radius: 20,
                 backgroundColor: const Color(0xFF12171C),
