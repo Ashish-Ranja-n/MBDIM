@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../design_tokens.dart';
 
 class Shop {
@@ -63,16 +64,32 @@ class ShopCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // removed profile avatar to save horizontal space (shops do not need profile pictures)
-                    const SizedBox(width: 6),
+                    // avatar placeholder
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(AppRadii.small),
+                      ),
+                      child: Center(
+                        child: Text(
+                          shop.name[0],
+                          style: GoogleFonts.inter(
+                            color: AppColors.kpiHighlight,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Flexible(
+                              Expanded(
                                 child: Text(
                                   shop.name,
                                   style: AppTypography.cardTitle,
@@ -80,113 +97,132 @@ class ShopCard extends StatelessWidget {
                                   maxLines: 1,
                                 ),
                               ),
-                              if (shop.trending)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 6.0),
-                                  child: Icon(
-                                    Icons.trending_up,
-                                    color: AppColors.kpiHighlight,
-                                    size: 16,
-                                  ),
+                              if (shop.trending) ...[
+                                const SizedBox(width: 6),
+                                Icon(
+                                  Icons.trending_up,
+                                  color: AppColors.kpiHighlight,
+                                  size: 16,
                                 ),
+                              ],
                             ],
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${shop.category} \u00b7 ${shop.city}',
+                            '${shop.category}  ${shop.city}',
                             style: AppTypography.caption,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
                           const SizedBox(height: 8),
-                          Row(
+                          // allow chips to wrap to next line on narrow screens
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
                             children: [
                               _statChip(
                                 'Avg UPI',
                                 currency.format(shop.avgUpi),
                               ),
-                              const SizedBox(width: 6),
                               _statChip('Ticket', currency.format(shop.ticket)),
-                              const SizedBox(width: 6),
                               _statChip('Est', '${shop.estReturn}x'),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          // progress + percent label laid out in a row to avoid overflow and keep measurements stable
-                          Row(
+                          // progress with percent overlay on the right
+                          // progress with percent badge aligned inside the bar to avoid overflow
+                          Stack(
+                            clipBehavior: Clip.hardEdge,
                             children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadii.small,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.small,
+                                ),
+                                child: Container(
+                                  height: 8,
+                                  color: AppColors.surface.withAlpha(
+                                    (0.9 * 255).round(),
                                   ),
-                                  child: LinearProgressIndicator(
-                                    value: percent,
-                                    minHeight: 8,
-                                    backgroundColor: AppColors.surface
-                                        .withAlpha((0.9 * 255).round()),
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.accentGreenLight,
+                                  child: FractionallySizedBox(
+                                    alignment: Alignment.centerLeft,
+                                    widthFactor: percent,
+                                    child: Container(
+                                      color: AppColors.accentGreen,
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              // percent pill reserved to the right of the progress bar and will not overflow
-                              _percentBadge(percentLabel),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 6.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.kpiHighlight,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      percentLabel,
+                                      style: AppTypography.badge.copyWith(
+                                        color: AppColors.surface,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // removed trailing floating actions; actions moved below progress for better layout
-                    const SizedBox(width: 6),
-                  ],
-                ),
-                // action row placed beneath the main row content to avoid right-side congestion
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const SizedBox(width: 6),
-                    ElevatedButton(
-                      onPressed: onInvest,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentGreen,
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        minimumSize: const Size(84, 36),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Subscribe',
-                          style: AppTypography.button.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
+                    // actions column
+                    Column(
+                      children: [
+                        SizedBox(
+                          width: 76,
+                          height: 36,
+                          child: ElevatedButton(
+                            onPressed: onInvest,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.accentGreen,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppRadii.button,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              minimumSize: const Size(76, 36),
+                            ),
+                            child: Text(
+                              'Invest',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        iconSize: 18,
-                        icon: const Icon(
-                          Icons.more_horiz,
-                          color: AppColors.primaryText,
+                        const SizedBox(height: 6),
+                        SizedBox(
+                          width: 76,
+                          height: 28,
+                          child: TextButton(
+                            onPressed: onDetails,
+                            child: const Text(
+                              'Details',
+                              style: TextStyle(color: Color(0xFFB7C2C8)),
+                            ),
+                          ),
                         ),
-                        onPressed: () {},
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -212,27 +248,5 @@ class ShopCard extends StatelessWidget {
     );
   }
 
-  Widget _percentBadge(String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.kpiHighlight,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 4,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Text(
-        label,
-        style: AppTypography.badge.copyWith(
-          color: AppColors.surface,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
+  // percent badge is now rendered inline as positioned widget
 }

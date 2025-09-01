@@ -3,15 +3,13 @@ import '../design_tokens.dart';
 
 class MarketSummaryCard extends StatelessWidget {
   final int activeListings;
-  final String todayVolume;
-  final String totalFundRaised;
-  final String avgYield;
+  final String? todayVolume; // INR formatted string or null
+  final String totalFundRaised; // already formatted (INR)
   const MarketSummaryCard({
     super.key,
     required this.activeListings,
-    required this.todayVolume,
+    this.todayVolume,
     required this.totalFundRaised,
-    required this.avgYield,
   });
 
   @override
@@ -30,77 +28,100 @@ class MarketSummaryCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildKPI(
-                  'Market Index',
-                  avgYield,
-                  AppColors.warning,
-                  Icons.trending_up,
+            // Active listings
+            Expanded(
+              child: InkWell(
+                onTap: () {},
+                child: Row(
+                  children: [
+                    Icon(Icons.store, color: AppColors.accentGreen, size: 18),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          activeListings.toString(),
+                          style: AppTypography.kpiNumber.copyWith(fontSize: 18),
+                        ),
+                        const SizedBox(height: 2),
+                        Text('Active', style: AppTypography.caption),
+                      ],
+                    ),
+                  ],
                 ),
-                _buildKPI(
-                  'Active Listings',
-                  activeListings.toString(),
-                  AppColors.warning,
-                  Icons.store,
-                ),
-                _buildKPI(
-                  'Total Fund Raised',
-                  totalFundRaised,
-                  AppColors.warning,
-                  Icons.savings,
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildKPI(
-                  'Today RSA',
-                  todayVolume,
-                  AppColors.warning,
-                  Icons.home_repair_service_rounded,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildKPI(String label, String value, Color color, IconData icon) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 6),
-            Text(
-              value,
-              // emphasise KPI numbers using the highlight colour (matches designer reference)
-              style: AppTypography.sectionHeading.copyWith(
-                color: AppColors.warning,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+            // Total raised (accent orange)
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.savings, color: AppColors.accentOrange, size: 18),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        totalFundRaised.isNotEmpty ? totalFundRaised : 'N/A',
+                        style: AppTypography.kpiNumber.copyWith(
+                          fontSize: 18,
+                          color: AppColors.accentOrange,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text('Total Raised', style: AppTypography.caption),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Today volume
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.show_chart, color: AppColors.mutedText, size: 18),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        todayVolume ?? 'N/A',
+                        style: AppTypography.kpiNumber.copyWith(
+                          fontSize: 16,
+                          color: todayVolume == null
+                              ? AppColors.mutedText
+                              : AppColors.kpiHighlight,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Text('Today', style: AppTypography.caption),
+                          if (todayVolume == null) ...[
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.info_outline,
+                              size: 14,
+                              color: AppColors.accentOrange,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: AppTypography.caption.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
+      ),
     );
   }
 }

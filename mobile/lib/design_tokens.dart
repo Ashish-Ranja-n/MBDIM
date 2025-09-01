@@ -10,8 +10,10 @@ class AppColors {
   static const surface = Color(0xFF0F1720); // slightly lighter
   static const cardElevated = Color(0xFF12171C);
   static const accentGreen = Color(0xFF0F9D58);
-  static const accentGreenLight = Color(0xFF1DB954);
+  // Accent green light (kpi highlight) as per design tokens
+  static const accentGreenLight = Color(0xFF66FFA6);
   static const kpiHighlight = Color(0xFF66FFA6);
+  static const accentOrange = Color(0xFFF59E0B);
   static const mutedText = Color(0xFF9AA5AD);
   static const primaryText = Color(0xFFE6EEF3);
   static const secondaryText = Color(0xFFB7C2C8);
@@ -84,7 +86,7 @@ class AppSpacing {
 }
 
 class AppRadii {
-  static const double card = 16;
+  static const double card = 14;
   static const double small = 8;
   static const double button = 12;
 }

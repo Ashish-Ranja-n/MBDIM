@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'investor_profile_page.dart';
+import '../design_tokens.dart';
 import '../widgets/market_summary_card.dart';
 import '../widgets/shop_card.dart';
 import '../widgets/invest_modal.dart';
 import '../widgets/shop_detail.dart';
 import '../widgets/shimmer_placeholder.dart';
+import '../widgets/user_panel.dart';
 
 class InvestorDashboard extends StatefulWidget {
   const InvestorDashboard({super.key});
@@ -20,6 +22,26 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
   bool _loading = true;
   List<Shop> _shops = [];
   List<Shop> _filteredShops = [];
+  String _selectedSegment = 'All Listings';
+
+  // mock authenticated user
+  final Map<String, dynamic> _user = {'name': 'Ashish', 'verified': true};
+
+  // demo fallback (TODO: replace with backend)
+  // demo fallback (TODO: replace with backend)
+  // Values are stored in paise (integer) to avoid floating point issues.
+  // Replace with backend-provided paise fields when available.
+  final Map<String, dynamic> _demoUserSummary = {
+    'total_balance_paise': 4000000, // ₹40,000.00
+    'invested_principal_paise': 3200000, // ₹32,000.00
+    'available_balance_paise': 800000, // ₹8,000.00
+    'accrued_returns_paise': 400000, // ₹4,000.00
+    'today_payout_est_paise': 12000, // ₹120.00
+    'next_payout_date': DateTime(2025, 9, 2),
+  };
+
+  // mock user investments keyed by shop name
+  final Map<String, Map<String, dynamic>> _userInvestments = {};
 
   @override
   void initState() {
@@ -75,6 +97,14 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
         trending: true,
       ),
     ];
+    // mock that user has invested in FreshMart: 8 units
+    _userInvestments.clear();
+    _userInvestments['FreshMart'] = {
+      'units': 8,
+      'invested': 40000.0,
+      'nextPayout': DateTime.now().add(const Duration(days: 1)),
+      'dailyReturn': 120.0,
+    };
     _applyFilters();
     setState(() => _loading = false);
   }
@@ -106,8 +136,27 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) =>
-          InvestModal(ticketPrice: shop.ticket, onConfirm: (qty) {}),
+      builder: (context) => InvestModal(
+        ticketPrice: shop.ticket,
+        onConfirm: (qty) {
+          // add to mock investments
+          final prev = _userInvestments[shop.name];
+          final added = qty * shop.ticket;
+          setState(() {
+            if (prev != null) {
+              prev['units'] = prev['units'] + qty;
+              prev['invested'] = prev['invested'] + added;
+            } else {
+              _userInvestments[shop.name] = {
+                'units': qty,
+                'invested': added,
+                'nextPayout': DateTime.now().add(const Duration(days: 7)),
+                'dailyReturn': 0.0,
+              };
+            }
+          });
+        },
+      ),
     );
   }
 
@@ -121,12 +170,65 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
   @override
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
+
+    // derive INR (paise) values from existing state where possible, fall back to demo
+    // invested amounts in older mocks may be stored as INR doubles; convert to paise.
+    final int investedPrincipalPaiseFromState = _userInvestments.values
+        .fold<int>(0, (p, e) {
+          if (e.containsKey('invested')) {
+            final invested = e['invested'];
+            final investedRupees = (invested is num)
+                ? invested.toDouble()
+                : double.parse(invested.toString());
+            return p + (investedRupees * 100).round();
+          }
+          return p;
+        });
+
+    // Prefer backend/state values if available, otherwise demo fallback
+    final int totalBalancePaise =
+        _demoUserSummary.containsKey('total_balance_paise')
+        ? (_demoUserSummary['total_balance_paise'] as int)
+        : investedPrincipalPaiseFromState; // fallback: at least show invested if no total
+
+    final int investedPrincipalPaise = investedPrincipalPaiseFromState > 0
+        ? investedPrincipalPaiseFromState
+        : (_demoUserSummary['invested_principal_paise'] as int);
+
+    // available balance: prefer demo/backend field; otherwise compute a conservative value
+    final int availableBalancePaise =
+        _demoUserSummary.containsKey('available_balance_paise')
+        ? (_demoUserSummary['available_balance_paise'] as int)
+        : (totalBalancePaise - investedPrincipalPaise).clamp(
+            0,
+            totalBalancePaise,
+          );
+
+    final int accruedReturnsPaise =
+        _demoUserSummary.containsKey('accrued_returns_paise')
+        ? (_demoUserSummary['accrued_returns_paise'] as int)
+        : 0;
+
+    final int todayPayoutEstPaise =
+        _demoUserSummary.containsKey('today_payout_est_paise')
+        ? (_demoUserSummary['today_payout_est_paise'] as int)
+        : 0;
+
+    final DateTime? nextPayoutDate =
+        _demoUserSummary['next_payout_date'] is DateTime
+        ? _demoUserSummary['next_payout_date'] as DateTime
+        : null;
+
+    // validation: total must be >= invested principal
+    final bool balanceInconsistent =
+        totalBalancePaise < investedPrincipalPaise &&
+        investedPrincipalPaise > 0;
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1115),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          color: const Color(0xFF0F9D58),
-          backgroundColor: const Color(0xFF12171C),
+          color: AppColors.accentGreen,
+          backgroundColor: AppColors.cardElevated,
           onRefresh: _loadMockData,
           child: CustomScrollView(
             slivers: [
@@ -136,7 +238,56 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                 delegate: _StickyMarketHeader(),
               ),
               // (search bar removed per design) — keeping header, KPI and content
-              // KPI / Summary strip
+              // User Panel (replaces big chart)
+              SliverToBoxAdapter(
+                child: UserPanel(
+                  user: _user,
+                  totalBalancePaise: totalBalancePaise,
+                  investedPrincipalPaise: investedPrincipalPaise,
+                  availableBalancePaise: availableBalancePaise,
+                  accruedReturnsPaise: accruedReturnsPaise,
+                  todayPayoutEstPaise: todayPayoutEstPaise,
+                  nextPayoutDate: nextPayoutDate,
+                  balanceInconsistent: balanceInconsistent,
+                  onInvestMore: () =>
+                      setState(() => _selectedSegment = 'All Listings'),
+                  onViewPortfolio: () {
+                    // mock portfolio screen
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Portfolio'),
+                        content: const Text(
+                          'Portfolio details (mock). TODO: wire backend.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onWithdraw: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Withdraw'),
+                        content: Text(
+                          'Withdraw ${currency.format(availableBalancePaise / 100.0)} (mock).',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Close'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -145,29 +296,67 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                   ),
                   child: MarketSummaryCard(
                     activeListings: _shops.length,
-                    todayVolume: currency.format(750),
-                    // compute total raised across shops for the new KPI
+                    todayVolume:
+                        null, // TODO: hook to backend for real-time volume
                     totalFundRaised: currency.format(
                       _shops.fold<double>(0.0, (p, e) => p + e.raised),
                     ),
-                    avgYield: '1.3x',
                   ),
                 ),
               ),
-              // Add spacing between KPI and chart
-              SliverToBoxAdapter(child: SizedBox(height: 8)),
-              // Chart card (mock sparkline)
+              // Segmented control
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 0,
-                    vertical: 2,
+                    horizontal: 16,
+                    vertical: 8,
                   ),
-                  child: _MarketChartCard(),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ToggleButtons(
+                          isSelected: [
+                            _selectedSegment == 'All Listings',
+                            _selectedSegment == 'My Investments',
+                          ],
+                          onPressed: (i) {
+                            setState(() {
+                              _selectedSegment = i == 0
+                                  ? 'All Listings'
+                                  : 'My Investments';
+                              _applyFilters();
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          selectedColor: Colors.white,
+                          fillColor: const Color(0xFF0F9D58),
+                          color: const Color(0xFFB7C2C8),
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              child: Text('All Listings (${_shops.length})'),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                'My Investments (${_userInvestments.length})',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              // Featured shop card (first shop)
-              if (_shops.isNotEmpty)
+              // Featured shop card (first shop) - keep but only on All Listings
+              if (_shops.isNotEmpty && _selectedSegment == 'All Listings')
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -211,22 +400,28 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                       ),
                     )
                   : () {
-                      // If we show a featured shop (the first shop), avoid duplicating it in the list.
+                      // determine shops to display based on segment
+                      List<Shop> base = _filteredShops;
+                      if (_selectedSegment == 'My Investments') {
+                        base = _shops
+                            .where((s) => _userInvestments.containsKey(s.name))
+                            .toList();
+                      }
+                      // avoid duplicating featured in All Listings
                       final displayedShops =
-                          (_shops.isNotEmpty &&
-                              _filteredShops.contains(_shops.first))
-                          ? _filteredShops
-                                .where((s) => s != _shops.first)
-                                .toList()
-                          : _filteredShops;
+                          (_selectedSegment == 'All Listings' &&
+                              _shops.isNotEmpty &&
+                              base.contains(_shops.first))
+                          ? base.where((s) => s != _shops.first).toList()
+                          : base;
 
                       return SliverList.separated(
                         itemCount: displayedShops.length,
                         separatorBuilder: (context, i) =>
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 12),
                         itemBuilder: (context, i) {
                           final shop = displayedShops[i];
-                          // staggered slide + fade for better entrance
+                          // show different card for My Investments
                           return _StaggeredItem(
                             index: i,
                             child: ShopCard(
@@ -313,7 +508,7 @@ class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
       decoration: BoxDecoration(
         // give the sticky header a solid background so the top area
         // isn't transparent over the system status bar
-        color: const Color(0xFF0B1115),
+        color: AppColors.background,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha((0.18 * 255).round()),
@@ -337,10 +532,10 @@ class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
               },
               child: CircleAvatar(
                 radius: 20,
-                backgroundColor: const Color(0xFF12171C),
+                backgroundColor: AppColors.cardElevated,
                 child: const Icon(
                   Icons.person,
-                  color: Color(0xFF0F9D58),
+                  color: AppColors.accentGreen,
                   size: 22,
                 ),
               ),
@@ -354,7 +549,7 @@ class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w700,
                     fontSize: 26,
-                    color: Color(0xFFE6EEF3),
+                    color: AppColors.primaryText,
                   ),
                 ),
               ),
@@ -362,7 +557,7 @@ class _StickyMarketHeader extends SliverPersistentHeaderDelegate {
             IconButton(
               icon: const Icon(
                 Icons.notifications_none,
-                color: Color(0xFF0F9D58),
+                color: AppColors.accentGreen,
               ),
               onPressed: () {},
               splashRadius: 24,
@@ -521,3 +716,10 @@ class _SparklinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+// User panel card shown under the header — Vittas-first display
+// _UserPanel removed; replaced by widgets/user_panel.dart
+
+// _MiniStat removed; replaced by Vittas-first layout in _UserPanel
+
+// Listing is now rendered using `ShopCard` widget in widgets/shop_card.dart
