@@ -282,41 +282,81 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: ToggleButtons(
-                          isSelected: [
-                            _selectedSegment == 'All Listings',
-                            _selectedSegment == 'My Investments',
-                          ],
-                          onPressed: (i) {
-                            setState(() {
-                              _selectedSegment = i == 0
-                                  ? 'All Listings'
-                                  : 'My Investments';
-                              _applyFilters();
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(16),
-                          selectedColor: Colors.white,
-                          fillColor: const Color(0xFF0F9D58),
-                          color: const Color(0xFFB7C2C8),
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardElevated,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() {
+                                    _selectedSegment = 'All Listings';
+                                    _applyFilters();
+                                  }),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _selectedSegment == 'All Listings'
+                                          ? AppColors.surface
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'All Listings (${_shops.length})',
+                                        style: TextStyle(
+                                          color:
+                                              _selectedSegment == 'All Listings'
+                                              ? Colors.white
+                                              : AppColors.secondaryText,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              child: Text('All Listings (${_shops.length})'),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() {
+                                    _selectedSegment = 'My Investments';
+                                    _applyFilters();
+                                  }),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          _selectedSegment == 'My Investments'
+                                          ? AppColors.surface
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        'My Investments (${_userInvestments.length})',
+                                        style: TextStyle(
+                                          color:
+                                              _selectedSegment ==
+                                                  'My Investments'
+                                              ? Colors.white
+                                              : AppColors.secondaryText,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              child: Text(
-                                'My Investments (${_userInvestments.length})',
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -335,6 +375,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                       shop: _shops.first,
                       onInvest: () => _onInvest(_shops.first),
                       onDetails: () => _onDetails(_shops.first),
+                      accentColor: AppColors.accentOrange,
                     ),
                   ),
                 ),
@@ -396,6 +437,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                               shop: shop,
                               onInvest: () => _onInvest(shop),
                               onDetails: () => _onDetails(shop),
+                              accentColor: AppColors.accentOrange,
                             ),
                           );
                         },
