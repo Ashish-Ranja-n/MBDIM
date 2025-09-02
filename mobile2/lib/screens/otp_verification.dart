@@ -74,11 +74,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         await prefs.setBool('is_verified', true);
 
         if (!mounted) return;
-        
+
         Navigator.pushReplacementNamed(context, '/business-profile');
       } catch (e) {
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to verify OTP. Please try again.'),
@@ -93,17 +93,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   void _resendOtp() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('OTP resent (mock)'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('OTP resent (mock)')));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppTheme.horizontalPadding),
@@ -112,10 +114,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Verify OTP',
-                  style: AppTheme.headlineLarge,
-                ),
+                const Text('Verify OTP', style: AppTheme.headlineLarge),
                 const SizedBox(height: 8),
                 if (_contact != null)
                   Text(

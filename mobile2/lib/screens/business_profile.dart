@@ -44,11 +44,9 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
     setState(() {
       _locationController.text = 'Mumbai, Maharashtra';
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Location detected (mock)'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Location detected (mock)')));
   }
 
   Future<void> _saveProfile() async {
@@ -67,11 +65,11 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
         await prefs.setBool('onboarding_complete', true);
 
         if (!mounted) return;
-        
+
         Navigator.pushReplacementNamed(context, '/dashboard');
       } catch (e) {
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to save profile. Please try again.'),
@@ -88,7 +86,11 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppTheme.horizontalPadding),
@@ -97,10 +99,7 @@ class _BusinessProfileScreenState extends State<BusinessProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Business Profile',
-                  style: AppTheme.headlineLarge,
-                ),
+                const Text('Business Profile', style: AppTheme.headlineLarge),
                 const SizedBox(height: 8),
                 const Text(
                   'Tell us about your business to get started',

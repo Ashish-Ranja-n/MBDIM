@@ -45,6 +45,12 @@ class AppTheme {
     color: primaryText,
   );
 
+  static const TextStyle headlineSmall = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: primaryText,
+  );
+
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
     color: primaryText,
@@ -55,6 +61,12 @@ class AppTheme {
     fontSize: 14,
     color: mutedText,
     height: 1.5,
+  );
+
+  static const TextStyle bodySmall = TextStyle(
+    fontSize: 12,
+    color: mutedText,
+    height: 1.4,
   );
 
   static ThemeData get theme => ThemeData(

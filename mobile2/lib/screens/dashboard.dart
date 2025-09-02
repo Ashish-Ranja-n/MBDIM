@@ -5,23 +5,35 @@ import '../widgets/campaign_card.dart';
 import '../widgets/kpi_tile.dart';
 import '../widgets/transaction_row.dart';
 
+/// Dashboard screen showing KPIs, campaign progress, transactions and quick actions.
 class DashboardScreen extends StatelessWidget {
-  DashboardScreen({super.key});
+  const DashboardScreen({super.key});
 
-  final _currencyFormat = NumberFormat.currency(
+  // Currency formatter for Indian Rupees
+  static final _currencyFormat = NumberFormat.currency(
     locale: 'en_IN',
     symbol: '₹',
     decimalDigits: 0,
   );
 
+  // Layout constants
+  static const double _cardPadding = 16.0;
+  static const double _itemSpacing = 16.0;
+  static const double _headerHeight = 180.0;
+  static const double _contentOffset = -60.0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.pageBackground,
       body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 200,
+            expandedHeight: _headerHeight,
             pinned: true,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(
@@ -29,61 +41,46 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 child: SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppTheme.horizontalPadding),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 60),
-                        _buildShopHeader(),
-                      ],
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.horizontalPadding,
+                      vertical: _cardPadding,
                     ),
+                    child: _buildShopHeader(),
                   ),
                 ),
               ),
             ),
-            backgroundColor: Colors.transparent,
             actions: [
               IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: () {
-                  // TODO: Navigate to settings
-                },
+                icon: const Icon(Icons.settings_outlined, color: Colors.white),
+                onPressed: () {},
+                tooltip: 'Settings',
               ),
             ],
           ),
+
+          // Content below header
           SliverToBoxAdapter(
             child: Transform.translate(
-              offset: const Offset(0, -60),
+              offset: const Offset(0, _contentOffset),
               child: Padding(
                 padding: const EdgeInsets.all(AppTheme.horizontalPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildActionButtons(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: _itemSpacing),
                     _buildCurrentCampaign(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: _itemSpacing),
                     const Text(
                       'Recent Transactions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.primaryText,
-                      ),
+                      style: AppTheme.headlineMedium,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     _buildTransactionsList(),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Quick Actions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.primaryText,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: _itemSpacing),
                     _buildQuickActions(),
-                    const SizedBox(height: 80), // Space for FAB
+                    const SizedBox(height: 80),
                   ],
                 ),
               ),
@@ -92,9 +89,7 @@ class DashboardScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // TODO: Navigate to new funding request
-        },
+        onPressed: () {},
         icon: const Icon(Icons.add),
         label: const Text('New Request'),
         backgroundColor: AppTheme.primaryTeal,
@@ -108,12 +103,12 @@ class DashboardScreen extends StatelessWidget {
         CircleAvatar(
           radius: 32,
           backgroundColor: AppTheme.tealLight,
-          child: Text(
+          child: const Text(
             'A',
             style: TextStyle(
               fontSize: 24,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
-              color: AppTheme.primaryTeal.withOpacity(0.8),
             ),
           ),
         ),
@@ -124,12 +119,14 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Text(
-                    "Ashish's Chai Point",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryText,
+                  Expanded(
+                    child: Text(
+                      "Ashish's Chai Point",
+                      style: AppTheme.headlineLarge.copyWith(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -139,33 +136,27 @@ class DashboardScreen extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
+                      color: Colors.white.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.verified, size: 12, color: Colors.green),
-                        SizedBox(width: 4),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.check_circle, size: 14, color: Colors.white),
+                        SizedBox(width: 6),
                         Text(
                           'Active',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 6),
               Text(
                 'Mumbai, Maharashtra',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.primaryText.withOpacity(0.6),
+                style: AppTheme.bodyMedium.copyWith(
+                  color: Colors.white.withOpacity(0.9),
                 ),
               ),
             ],
@@ -177,7 +168,7 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildActionButtons() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(_cardPadding),
       decoration: BoxDecoration(
         color: AppTheme.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.cardRadius),
@@ -189,20 +180,20 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: KpiTile(
-                  title: "Today's UPI",
-                  value: _currencyFormat.format(3200),
-                  subtitle: 'Estimated',
+                  title: "Today's GP",
+                  value: '₹3,200',
                   icon: Icons.payment,
+                  onTap: () {},
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: KpiTile(
-                  title: 'Avg UPI/day',
-                  value: _currencyFormat.format(8500),
-                  subtitle: 'Last 30 days',
-                  icon: Icons.trending_up,
+                  title: 'Avg /day',
+                  value: '₹8,500',
                   iconColor: Colors.green,
+                  icon: Icons.trending_up,
+                  onTap: () {},
                 ),
               ),
             ],
@@ -212,19 +203,15 @@ class DashboardScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Navigate to QR replacement
-                  },
-                  icon: const Icon(Icons.qr_code),
+                  onPressed: () {},
+                  icon: const Icon(Icons.qr_code_scanner),
                   label: const Text('Replace QR'),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    // TODO: Navigate to support
-                  },
+                  onPressed: () {},
                   icon: const Icon(Icons.support_agent),
                   label: const Text('Support'),
                 ),
@@ -243,9 +230,7 @@ class DashboardScreen extends StatelessWidget {
       target: 50000,
       daysLeft: 12,
       investorCount: 21,
-      onManage: () {
-        // TODO: Navigate to campaign details
-      },
+      onManage: () {},
     );
   }
 
@@ -265,6 +250,7 @@ class DashboardScreen extends StatelessWidget {
             status: 'Completed',
             currencyFormat: _currencyFormat,
           ),
+          const Divider(height: 1),
           TransactionRow(
             date: DateTime.now().subtract(const Duration(hours: 2)),
             type: TransactionType.sale,
@@ -272,6 +258,7 @@ class DashboardScreen extends StatelessWidget {
             status: 'Completed',
             currencyFormat: _currencyFormat,
           ),
+          const Divider(height: 1),
           TransactionRow(
             date: DateTime.now().subtract(const Duration(hours: 4)),
             type: TransactionType.payout,
@@ -286,7 +273,7 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildQuickActions() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(_cardPadding),
       decoration: BoxDecoration(
         color: AppTheme.cardBackground,
         borderRadius: BorderRadius.circular(AppTheme.cardRadius),
@@ -294,36 +281,81 @@ class DashboardScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.upload_file),
-            title: const Text('Upload Documents'),
-            subtitle: const Text('Complete KYC verification'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Navigate to document upload
-            },
+          _QuickActionTile(
+            icon: Icons.upload_file,
+            iconColor: Colors.blue,
+            title: 'Upload Documents',
+            subtitle: 'Complete KYC verification',
+            onTap: () {},
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.account_balance),
-            title: const Text('Bank & Payout'),
-            subtitle: const Text('Manage your bank accounts'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Navigate to bank settings
-            },
+          _QuickActionTile(
+            icon: Icons.account_balance,
+            iconColor: Colors.green,
+            title: 'Bank & Payout',
+            subtitle: 'Manage your bank accounts',
+            onTap: () {},
           ),
           const Divider(),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text('Agreements'),
-            subtitle: const Text('View terms and conditions'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              // TODO: Navigate to agreements
-            },
+          _QuickActionTile(
+            icon: Icons.description,
+            iconColor: Colors.orange,
+            title: 'Agreements',
+            subtitle: 'View terms and conditions',
+            onTap: () {},
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _QuickActionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    Color? iconColor,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: (iconColor ?? Colors.blue).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: iconColor ?? Colors.blue, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey, size: 24),
+            ],
+          ),
+        ),
       ),
     );
   }

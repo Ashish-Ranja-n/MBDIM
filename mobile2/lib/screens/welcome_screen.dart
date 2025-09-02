@@ -30,7 +30,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     if (_isEmail && !value.contains('@')) {
       return 'Please enter a valid email address';
     }
-    if (!_isEmail && (value.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(value))) {
+    if (!_isEmail &&
+        (value.length != 10 || !RegExp(r'^[0-9]+$').hasMatch(value))) {
       return 'Please enter a valid 10-digit mobile number';
     }
     return null;
@@ -45,18 +46,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Future<void> _continue() async {
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      
+
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('pending_contact', _contactController.text);
         await prefs.setBool('is_email_contact', _isEmail);
-        
+
         if (!mounted) return;
-        
+
         Navigator.pushReplacementNamed(context, '/otp');
       } catch (e) {
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Failed to save contact. Please try again.'),
@@ -73,7 +74,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppTheme.horizontalPadding),
@@ -96,7 +101,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   label: 'Email or Mobile Number',
                   controller: _contactController,
                   validator: _validateContact,
-                  keyboardType: _isEmail ? TextInputType.emailAddress : TextInputType.phone,
+                  keyboardType: _isEmail
+                      ? TextInputType.emailAddress
+                      : TextInputType.phone,
                   onChanged: _updateInputType,
                   autofocus: true,
                 ),
@@ -109,7 +116,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 const SizedBox(height: 16),
                 Center(
                   child: TextButton(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/otp'),
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/otp'),
                     child: const Text('Already have an account?'),
                   ),
                 ),
