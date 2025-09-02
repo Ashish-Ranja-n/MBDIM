@@ -8,7 +8,8 @@ import '../widgets/shop_card.dart';
 import '../widgets/invest_modal.dart';
 import '../widgets/shop_detail.dart';
 import '../widgets/shimmer_placeholder.dart';
-import '../widgets/user_panel.dart';
+// previous UserPanel replaced by OverviewBoard
+import '../widgets/overview_board.dart';
 
 class InvestorDashboard extends StatefulWidget {
   const InvestorDashboard({super.key});
@@ -204,6 +205,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
             totalBalancePaise,
           );
 
+    // accrued returns (not used directly in this widget but available to pass to details)
     final int accruedReturnsPaise =
         _demoUserSummary.containsKey('accrued_returns_paise')
         ? (_demoUserSummary['accrued_returns_paise'] as int)
@@ -238,54 +240,20 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                 delegate: _StickyMarketHeader(),
               ),
               // (search bar removed per design) — keeping header, KPI and content
-              // User Panel (replaces big chart)
+              // Overview Board (replaces the old UserPanel)
               SliverToBoxAdapter(
-                child: UserPanel(
-                  user: _user,
-                  totalBalancePaise: totalBalancePaise,
-                  investedPrincipalPaise: investedPrincipalPaise,
-                  availableBalancePaise: availableBalancePaise,
+                child: OverviewBoard(
+                  userName: _user['name'] as String? ?? 'User',
+                  verified: _user['verified'] as bool? ?? false,
+                  totalInvestmentPaise: totalBalancePaise,
+                  estimatedIndex: 1.25, // TODO: replace with backend value
+                  walletBalancePaise: availableBalancePaise,
                   accruedReturnsPaise: accruedReturnsPaise,
-                  todayPayoutEstPaise: todayPayoutEstPaise,
+                  todayRsaPaise: todayPayoutEstPaise,
+                  yesterdayRsaPaise:
+                      (_demoUserSummary['today_payout_est_paise'] as int?) ?? 0,
                   nextPayoutDate: nextPayoutDate,
-                  balanceInconsistent: balanceInconsistent,
-                  onInvestMore: () =>
-                      setState(() => _selectedSegment = 'All Listings'),
-                  onViewPortfolio: () {
-                    // mock portfolio screen
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Portfolio'),
-                        content: const Text(
-                          'Portfolio details (mock). TODO: wire backend.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  onWithdraw: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Withdraw'),
-                        content: Text(
-                          'Withdraw ${currency.format(availableBalancePaise / 100.0)} (mock).',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                  showWarning: balanceInconsistent,
                 ),
               ),
               SliverToBoxAdapter(

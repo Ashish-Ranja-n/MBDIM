@@ -15,8 +15,8 @@ class _ProfilePageState extends State<InvestorProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   String _name = 'John Doe';
   UserRole _role = UserRole.investor;
-  bool _verified = true;
-  String _city = 'Delhi';
+  final bool _verified = true;
+  final String _city = 'Delhi';
   String _defaultDashboard = 'Open Market';
 
   @override
