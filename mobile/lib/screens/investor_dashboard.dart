@@ -363,19 +363,21 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                   ),
                 ),
               ),
-              // Featured shop card (first shop) - keep but only on All Listings
+              // Featured shop card (first shop) - keep but only on All Listings.
+              // Use embedded style so cards appear as one connected list area.
               if (_shops.isNotEmpty && _selectedSegment == 'All Listings')
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 0,
-                      vertical: 2,
+                      horizontal: 16,
+                      vertical: 0,
                     ),
                     child: ShopCard(
                       shop: _shops.first,
                       onInvest: () => _onInvest(_shops.first),
                       onDetails: () => _onDetails(_shops.first),
                       accentColor: AppColors.accentOrange,
+                      embedded: true,
                     ),
                   ),
                 ),
@@ -427,10 +429,10 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                       return SliverList.separated(
                         itemCount: displayedShops.length,
                         separatorBuilder: (context, i) =>
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 6),
                         itemBuilder: (context, i) {
                           final shop = displayedShops[i];
-                          // show different card for My Investments
+                          // show list-style (embedded) card for consistent connected UI
                           return _StaggeredItem(
                             index: i,
                             child: ShopCard(
@@ -438,6 +440,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                               onInvest: () => _onInvest(shop),
                               onDetails: () => _onDetails(shop),
                               accentColor: AppColors.accentOrange,
+                              embedded: true,
                             ),
                           );
                         },

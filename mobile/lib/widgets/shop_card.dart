@@ -46,7 +46,7 @@ class ShopCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percent = (shop.raised / shop.target).clamp(0, 1).toDouble();
-    final percentLabel = '${(percent * 100).toStringAsFixed(0)}%';
+    final percentLabel = '${(percent * 100).round()}%';
     final currency = NumberFormat.currency(locale: 'en_IN', symbol: '₹');
 
     final inner = Padding(
@@ -80,7 +80,7 @@ class ShopCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${shop.category}   ${shop.city}',
+                      '${shop.category} • ${shop.city}',
                       style: AppTypography.caption,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -96,57 +96,62 @@ class ShopCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadii.small),
-                      child: Container(
-                        height: 14,
-                        color: AppColors.surface.withAlpha(80),
-                        child: Stack(
-                          alignment: Alignment.centerLeft,
-                          children: [
-                            FractionallySizedBox(
-                              widthFactor: percent,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: accentColor,
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadii.small,
-                                  ),
-                                ),
+                    // Progress row: a flexible progress bar and a fixed percent badge to the right.
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Bar (thinner)
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(AppRadii.small),
+                            child: Container(
+                              height: 8,
+                              color: AppColors.surface.withAlpha(
+                                (0.12 * 255).round(),
                               ),
-                            ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Padding(
-                                padding: const EdgeInsets.only(right: 6.0),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.cardElevated,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.25),
-                                        blurRadius: 6,
+                              child: Stack(
+                                children: [
+                                  FractionallySizedBox(
+                                    alignment: Alignment.centerLeft,
+                                    widthFactor: percent,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
                                       ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    percentLabel,
-                                    style: AppTypography.badge.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        // Percent badge (fixed width) outside the bar to avoid overlap
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.cardElevated,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.18),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            percentLabel,
+                            style: AppTypography.badge.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -165,7 +170,9 @@ class ShopCard extends StatelessWidget {
 
     if (embedded) {
       return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+        // match the horizontal inset used by non-embedded cards so embedded
+        // and featured cards align perfectly.
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadii.card),
           onTap: onDetails,
