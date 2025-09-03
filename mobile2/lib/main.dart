@@ -18,6 +18,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Shop Business',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       home: const OnboardingCheck(),
       routes: {

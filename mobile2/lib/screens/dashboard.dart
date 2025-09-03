@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../theme.dart';
 import '../widgets/campaign_card.dart';
@@ -19,8 +20,9 @@ class DashboardScreen extends StatelessWidget {
   // Layout constants
   static const double _cardPadding = 16.0;
   static const double _itemSpacing = 16.0;
-  static const double _headerHeight = 180.0;
-  static const double _contentOffset = -60.0;
+  static const double _headerHeight = 160.0;
+  // no negative offset so header won't overlap content when scrolling
+  static const double _contentOffset = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -31,32 +33,40 @@ class DashboardScreen extends StatelessWidget {
         slivers: [
           SliverAppBar(
             expandedHeight: _headerHeight,
-            pinned: true,
+            // make header scroll away completely to avoid leaving the gradient overlay
+            pinned: false,
             backgroundColor: Colors.transparent,
             elevation: 0,
+            // ensure status bar icons are dark (suitable for light gradient header)
+            systemOverlayStyle: SystemUiOverlayStyle.dark.copyWith(
+              statusBarColor: Colors.transparent,
+            ),
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.headerGradient,
+              background: ClipRRect(
+                // round the bottom of the header so it visually separates from content
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(24),
                 ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.horizontalPadding,
-                      vertical: _cardPadding,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: AppTheme.headerGradient,
+                  ),
+                  child: SafeArea(
+                    child: Padding(
+                      // push content lower so title/avatar sit comfortably below the status bar
+                      padding: const EdgeInsets.only(
+                        left: AppTheme.horizontalPadding,
+                        right: AppTheme.horizontalPadding,
+                        top: 20,
+                        bottom: 12,
+                      ),
+                      child: _buildShopHeader(),
                     ),
-                    child: _buildShopHeader(),
                   ),
                 ),
               ),
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined, color: Colors.white),
-                onPressed: () {},
-                tooltip: 'Settings',
-              ),
-            ],
+            // settings button is moved into the flexibleSpace header so it scrolls with it
           ),
 
           // Content below header
@@ -68,7 +78,11 @@ class DashboardScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildActionButtons(),
+                    // add an explicit top margin so action card sits below header nicely
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: _buildActionButtons(),
+                    ),
                     const SizedBox(height: _itemSpacing),
                     _buildCurrentCampaign(),
                     const SizedBox(height: _itemSpacing),
@@ -88,78 +102,88 @@ class DashboardScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        icon: const Icon(Icons.add),
-        label: const Text('New Request'),
-        backgroundColor: AppTheme.primaryTeal,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 8.0),
+        child: FloatingActionButton.extended(
+          onPressed: () {},
+          icon: const Icon(Icons.add),
+          label: const Text('New Request'),
+          backgroundColor: AppTheme.primaryTeal,
+        ),
       ),
     );
   }
 
   Widget _buildShopHeader() {
-    return Row(
+    return Stack(
+      clipBehavior: Clip.none,
       children: [
-        CircleAvatar(
-          radius: 32,
-          backgroundColor: AppTheme.tealLight,
-          child: const Text(
-            'A',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 32,
+              backgroundColor: AppTheme.tealLight,
+              child: const Text(
+                'A',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      "Ashish's Chai Point",
-                      style: AppTheme.headlineLarge.copyWith(
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.check_circle, size: 14, color: Colors.white),
-                        SizedBox(width: 6),
-                        Text(
-                          'Active',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Ashish's Chai Point",
+                          style: AppTheme.headlineLarge.copyWith(
+                            color: AppTheme.primaryText,
+                            fontSize: 20,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Mumbai, Maharashtra',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.mutedText,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Mumbai, Maharashtra',
-                style: AppTheme.bodyMedium.copyWith(
-                  color: Colors.white.withOpacity(0.9),
+            ),
+          ],
+        ),
+
+        // positioned settings button so it is inside the header and scrolls away
+        Positioned(
+          right: -4,
+          top: -4,
+          child: Material(
+            color: Colors.white,
+            elevation: 2,
+            borderRadius: BorderRadius.circular(18),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () {},
+              child: Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Icon(
+                  Icons.settings_outlined,
+                  color: AppTheme.primaryTeal,
+                  size: 18,
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ],
@@ -250,7 +274,7 @@ class DashboardScreen extends StatelessWidget {
             status: 'Completed',
             currencyFormat: _currencyFormat,
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: Colors.grey[300]),
           TransactionRow(
             date: DateTime.now().subtract(const Duration(hours: 2)),
             type: TransactionType.sale,
@@ -258,7 +282,7 @@ class DashboardScreen extends StatelessWidget {
             status: 'Completed',
             currencyFormat: _currencyFormat,
           ),
-          const Divider(height: 1),
+          Divider(height: 1, color: Colors.grey[300]),
           TransactionRow(
             date: DateTime.now().subtract(const Duration(hours: 4)),
             type: TransactionType.payout,
@@ -281,7 +305,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _QuickActionTile(
+          _quickActionTile(
             icon: Icons.upload_file,
             iconColor: Colors.blue,
             title: 'Upload Documents',
@@ -289,7 +313,7 @@ class DashboardScreen extends StatelessWidget {
             onTap: () {},
           ),
           const Divider(),
-          _QuickActionTile(
+          _quickActionTile(
             icon: Icons.account_balance,
             iconColor: Colors.green,
             title: 'Bank & Payout',
@@ -297,7 +321,7 @@ class DashboardScreen extends StatelessWidget {
             onTap: () {},
           ),
           const Divider(),
-          _QuickActionTile(
+          _quickActionTile(
             icon: Icons.description,
             iconColor: Colors.orange,
             title: 'Agreements',
@@ -309,7 +333,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _QuickActionTile({
+  Widget _quickActionTile({
     required IconData icon,
     required String title,
     required String subtitle,
