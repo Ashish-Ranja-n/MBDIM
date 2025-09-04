@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import '../theme.dart';
+import 'settings.dart';
 import '../widgets/campaign_card.dart';
 import '../widgets/kpi_tile.dart';
 import '../widgets/transaction_row.dart';
@@ -60,7 +61,7 @@ class DashboardScreen extends StatelessWidget {
                         top: 20,
                         bottom: 12,
                       ),
-                      child: _buildShopHeader(),
+                      child: _buildShopHeader(context),
                     ),
                   ),
                 ),
@@ -114,7 +115,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildShopHeader() {
+  Widget _buildShopHeader(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -174,7 +175,11 @@ class DashboardScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(18),
             child: InkWell(
               borderRadius: BorderRadius.circular(18),
-              onTap: () {},
+              onTap: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => SettingsScreen()));
+              },
               child: Padding(
                 padding: const EdgeInsets.all(6.0),
                 child: Icon(
