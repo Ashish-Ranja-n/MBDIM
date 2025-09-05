@@ -81,8 +81,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (key.currentState?.validate() ?? false)
+                if (key.currentState?.validate() ?? false) {
                   Navigator.of(context).pop(true);
+                }
               },
               child: const Text('Save'),
             ),
@@ -136,8 +137,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             ),
             TextButton(
               onPressed: () {
-                if (key.currentState?.validate() ?? false)
+                if (key.currentState?.validate() ?? false) {
                   Navigator.of(context).pop(true);
+                }
               },
               child: const Text('Save'),
             ),
