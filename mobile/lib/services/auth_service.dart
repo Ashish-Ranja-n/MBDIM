@@ -23,7 +23,7 @@ class AuthResult {
 }
 
 class AuthService {
-  static const String baseUrl = 'http://localhost:3000/api'; // Change for prod
+  static const String baseUrl = 'http://vitkara.com/api'; // Change for prod
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
     clientId: GoogleAuthConfig.webClientId, // Add this for web support
