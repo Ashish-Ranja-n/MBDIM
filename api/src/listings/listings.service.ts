@@ -78,7 +78,7 @@ export class ListingsService {
 
     // Start a transaction for wallet-based investment
     if (dto.useWallet) {
-      return this.prisma.$transaction(async (tx: any) => {
+      return this.prisma.$transaction(async (tx) => {
         const investor = await tx.investor.findUnique({
           where: { id: investorId },
         });
@@ -157,7 +157,7 @@ export class ListingsService {
 
   // In production, this would be called by payment gateway webhook
   private async confirmInvestment(investmentId: string) {
-    return this.prisma.$transaction(async (tx: PrismaTransaction) => {
+    return this.prisma.$transaction(async (tx) => {
       const investment = await tx.investment.update({
         where: { id: investmentId },
         data: { status: 'CONFIRMED' },

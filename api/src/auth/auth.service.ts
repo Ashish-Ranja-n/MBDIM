@@ -1,12 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
-enum UserType {
-  INVESTOR = 'INVESTOR',
-  SHOP = 'SHOP',
-  ADMIN = 'ADMIN'
-}
+import { Prisma, UserType } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -58,15 +53,16 @@ export class AuthService {
       where: { id: session.id },
     });
 
-    return {
+    const userResponse = {
       accessToken,
       refreshToken,
       user: {
-        id: user.id,
         role: session.type,
         ...user,
       },
-      isNew: user.createdAt === user.updatedAt, // If dates match, profile not updated yet
+      isNew: session.type === UserType.ADMIN 
+        ? false // Admin users are never new
+        : 'updatedAt' in user && user.createdAt.getTime() === user.updatedAt.getTime(),
     };
   }
 
