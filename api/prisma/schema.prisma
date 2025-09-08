@@ -1,0 +1,150 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Auth-related models
+model OtpSession {
+  id        String   @id @default(uuid())
+  contact   String   // phone or email
+  otp       String
+  type      UserType // INVESTOR, SHOP, or ADMIN
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userType  UserType
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+// Core models as per requirements
+model Investor {
+  id                 String       @id @default(uuid())
+  phone              String       @unique
+  name               String?
+  email              String?      @unique
+  walletBalancePaise BigInt      @default(0)
+  kycStatus          KycStatus    @default(PENDING)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  investments        Investment[]
+  transactions       Transaction[]
+}
+
+model Shop {
+  id              String          @id @default(uuid())
+  phone           String          @unique
+  ownerName       String
+  shopName        String
+  city            String
+  upiId           String?
+  avgUpiDayPaise  BigInt?
+  qrUrl           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  listings        Listing[]
+  dailyRevenues   DailyRevenue[]
+  transactions    Transaction[]
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  createdAt    DateTime @default(now())
+}
+
+model Listing {
+  id                String       @id @default(uuid())
+  shopId           String
+  shop             Shop         @relation(fields: [shopId], references: [id])
+  title            String
+  description      String
+  ticketPricePaise BigInt
+  targetAmountPaise BigInt
+  raisedAmountPaise BigInt      @default(0)
+  status           ListingStatus @default(DRAFT)
+  startAt          DateTime?
+  endAt            DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  investments      Investment[]
+}
+
+model Investment {
+  id              String           @id @default(uuid())
+  listingId       String
+  listing         Listing         @relation(fields: [listingId], references: [id])
+  investorId      String
+  investor        Investor        @relation(fields: [investorId], references: [id])
+  numTickets      Int
+  amountPaidPaise BigInt
+  paymentReference String
+  status          InvestmentStatus
+  createdAt       DateTime        @default(now())
+}
+
+model Transaction {
+  id           String          @id @default(uuid())
+  type         TransactionType
+  userType     UserType
+  userId       String
+  shopId       String?
+  amountPaise  BigInt
+  metadata     Json?
+  createdAt    DateTime       @default(now())
+  investor     Investor?      @relation(fields: [userId], references: [id])
+  shop         Shop?         @relation(fields: [shopId], references: [id])
+}
+
+model DailyRevenue {
+  id          String   @id @default(uuid())
+  shopId      String
+  shop        Shop     @relation(fields: [shopId], references: [id])
+  date        DateTime
+  amountPaise BigInt
+  createdAt   DateTime @default(now())
+}
+
+enum UserType {
+  INVESTOR
+  SHOP
+  ADMIN
+}
+
+enum KycStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+}
+
+enum ListingStatus {
+  DRAFT
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum InvestmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum TransactionType {
+  INVESTMENT
+  CREDIT
+  WITHDRAWAL
+  RETURN
+}

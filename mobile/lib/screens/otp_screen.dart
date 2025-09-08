@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 
 class OtpScreen extends StatefulWidget {
-  final void Function() onVerified;
-  const OtpScreen({super.key, required this.onVerified});
+  final Function(AuthResult) onVerified;
+  final String pendingId;
+  const OtpScreen({
+    super.key,
+    required this.onVerified,
+    required this.pendingId,
+  });
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -13,6 +21,7 @@ class OtpScreen extends StatefulWidget {
 class _OtpScreenState extends State<OtpScreen> {
   final TextEditingController _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -87,19 +96,59 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                       elevation: 2,
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        widget.onVerified();
-                      }
-                    },
-                    child: Text(
-                      'Verify',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
-                    ),
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              setState(() => _isLoading = true);
+                              try {
+                                final auth = Provider.of<AuthProvider>(
+                                  context,
+                                  listen: false,
+                                );
+                                await auth.verifyOtp(_otpController.text);
+                                if (mounted) {
+                                  widget.onVerified(
+                                    AuthResult(
+                                      accessToken: auth.state.accessToken,
+                                      refreshToken: auth.state.refreshToken,
+                                      user: auth.state.user,
+                                      isNew: auth.state.isNewUser,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())),
+                                  );
+                                }
+                              } finally {
+                                if (mounted) {
+                                  setState(() => _isLoading = false);
+                                }
+                              }
+                            }
+                          },
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'Verify',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
                   ),
                 ),
               ],

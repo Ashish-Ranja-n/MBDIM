@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../services/auth_service.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  final void Function(String) onContinue;
+  final void Function(AuthResult) onContinue;
   const WelcomeScreen({super.key, required this.onContinue});
 
   @override
@@ -13,6 +15,8 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   final TextEditingController _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +69,25 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your mobile number or email';
                       }
+
+                      // Email validation
+                      if (value.contains('@')) {
+                        final emailRegex = RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        );
+                        if (!emailRegex.hasMatch(value)) {
+                          return 'Please enter a valid email address';
+                        }
+                      }
+                      // Phone validation (Indian format)
+                      else {
+                        final phoneRegex = RegExp(
+                          r'^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$',
+                        );
+                        if (!phoneRegex.hasMatch(value)) {
+                          return 'Please enter a valid Indian mobile number';
+                        }
+                      }
                       return null;
                     },
                   ),
@@ -81,17 +104,97 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       ),
                       elevation: 2,
                     ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        widget.onContinue(_controller.text.trim());
-                      }
-                    },
-                    child: Text(
-                      'Continue',
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            if (_formKey.currentState!.validate()) {
+                              setState(() => _isLoading = true);
+
+                              final result = await _authService.startAuth(
+                                _controller.text.trim(),
+                              );
+
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                                if (result.error != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(result.error!)),
+                                  );
+                                } else {
+                                  widget.onContinue(result);
+                                }
+                              }
+                            }
+                          },
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.black,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            'Continue',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'or',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: Colors.white70,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 56,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: _isLoading
+                        ? null
+                        : () async {
+                            setState(() => _isLoading = true);
+
+                            final result = await _authService
+                                .signInWithGoogle();
+
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                              if (result.error != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(result.error!)),
+                                );
+                              } else {
+                                widget.onContinue(result);
+                              }
+                            }
+                          },
+                    icon: SvgPicture.asset(
+                      'assets/images/google_logo.svg',
+                      height: 40,
+                    ),
+                    label: Text(
+                      'Continue with Google',
                       style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
