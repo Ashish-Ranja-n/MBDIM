@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: mbdim-api
+  name: vitkara-api
     env: node
   buildCommand: cd api && npm ci && npx prisma generate && npm run build
   startCommand: cd api && ./start.sh
@@ -16,10 +16,10 @@ services:
         generateValue: true
       - key: DATABASE_URL
         fromDatabase:
-          name: mbdim-db
+          name: vitkara-db
           property: connectionString
 
 databases:
-  - name: mbdim-db
-    databaseName: mbdim
+  - name: vitkara-db
+  databaseName: vitkara
     plan: standard

@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Description */}
           <div className="col-span-1 md:col-span-2">
-            <div className="text-xl font-bold text-primary mb-4">MBDIM</div>
+            <div className="text-xl font-bold text-primary mb-4">VITKARA</div>
             <p className="text-gray-600 mb-4 max-w-md">
               Connecting local businesses with community investors for sustainable growth and transparent returns.
             </p>
@@ -42,7 +42,7 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">Contact</h3>
             <ul className="space-y-3">
-              <li className="text-base text-gray-600">support@mbdim.com</li>
+              <li className="text-base text-gray-600">support@vitkara.com</li>
               <li className="text-base text-gray-600">+1 (555) 123-4567</li>
             </ul>
           </div>
@@ -51,7 +51,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-gray-100">
           <p className="text-center text-gray-400 text-sm">
-            © {currentYear} MBDIM. All rights reserved.
+            © {currentYear} VITKARA. All rights reserved.
           </p>
         </div>
       </div>

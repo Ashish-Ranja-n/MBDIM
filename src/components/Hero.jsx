@@ -13,7 +13,7 @@ const Hero = () => {
             </span>
           </h1>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            MBDIM connects small neighborhood businesses — from tea stalls to barbers — with local investors. 
+            VITKARA connects small neighborhood businesses — from tea stalls to barbers — with local investors. 
             Businesses receive community-driven funding, while investors earn transparent daily returns.
           </p>
           <div className="flex justify-center gap-4">
