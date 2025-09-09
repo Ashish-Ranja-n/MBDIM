@@ -2,8 +2,8 @@ services:
   - type: web
     name: mbdim-api
     env: node
-    buildCommand: cd api && npm ci && npx prisma generate && npm run build
-    startCommand: cd api && npm run start:prod
+  buildCommand: cd api && npm ci && npx prisma generate && npm run build
+  startCommand: cd api && ./start.sh
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
