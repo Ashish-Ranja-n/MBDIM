@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../config/google_auth_config.dart';
 
 class AuthResult {
   final String? accessToken;
@@ -23,12 +22,16 @@ class AuthResult {
 }
 
 class AuthService {
-  static const String baseUrl = 'http://vitkara.com/api'; // Change for prod
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
+  // Base URL for API requests. Defaults to the Render-hosted web service URL.
+  // Override at build time with: --dart-define=API_BASE_URL=https://your-api.onrender.com/api
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://vitkara-web-service.onrender.com/api',
+  );
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    clientId: GoogleAuthConfig.webClientId, // Add this for web support
     serverClientId:
-        GoogleAuthConfig.webClientId, // Add this for getting serverAuthCode
+        '425965460296-c5kapm3apielujsfu8vegjnu80nf8ttn.apps.googleusercontent.com',
   );
 
   // Store tokens
@@ -97,9 +100,41 @@ class AuthService {
         return AuthResult(error: 'Google sign in cancelled');
       }
 
-      // Get email and start OTP flow
-      // Note: In production, you might want a separate endpoint for Google auth
-      return startAuth(googleUser.email);
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        return AuthResult(error: 'Failed to get ID token');
+      }
+
+      // Send the ID token to your backend
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/google'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'idToken': idToken,
+          'email': googleUser.email,
+          'name': googleUser.displayName,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        await _saveTokens(data['accessToken'], data['refreshToken']);
+
+        return AuthResult(
+          accessToken: data['accessToken'],
+          refreshToken: data['refreshToken'],
+          user: data['user'],
+          isNew: data['isNew'] ?? false,
+        );
+      } else {
+        final error = json.decode(response.body);
+        return AuthResult(
+          error: error['message'] ?? 'Failed to authenticate with Google',
+        );
+      }
     } catch (e) {
       return AuthResult(error: e.toString());
     }
