@@ -8,7 +8,7 @@
       "envVars": [
         {
           "key": "DATABASE_URL",
-          "value": "postgresql://vitkara_postgresql_user:i6hJ2Zl8TNw7X1690iMe46BhREChr9aU@dpg-d2vdms6r433s73f4j960-a.virginia-postgres.render.com/vitkara_postgresql"
+          "value": "YOUR_DATABASE_URL"
         }
       ]
     }
